@@ -33,20 +33,24 @@ Decide these with me for each project and record the decision in the project's `
 ms-<name>/
 ├── src/
 │   └── WebApi/
-├── .vscode/                 # launch.json, settings.json, tasks.json
+├── .vscode/                 # one repo per service only
 ├── .dockerignore
-├── .editorconfig
+├── .editorconfig            # one repo per service only
 ├── .env.example
-├── .gitignore
-├── <Name>.sln
+├── .gitignore               # one repo per service only
+├── <Name>.<sln|slnx>
 ├── Dockerfile
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
 └── README.md
 ```
 
-- `<Name>` is the service name in PascalCase without the `ms-` prefix.
+- `<Name>` is the service name in PascalCase without the `ms-` prefix. Solutions are `.slnx` on .NET 10 and later, `.sln` on older versions.
 - The project is always `src/WebApi/WebApi.csproj` with root namespace `WebApi`.
+- `.editorconfig`, `.gitignore`, and `.vscode/` (`launch.json`, `settings.json`, `tasks.json`) live in the service root when each service has its own repo, and only in the repository root in a monorepo. In a monorepo, `.vscode/` contains:
+  - `settings.json`: `dotnet.defaultSolution` points to the root solution.
+  - `tasks.json`: one `build ms-<name>` task per service that builds its `WebApi.csproj`.
+  - `launch.json`: one `ms-<name> (Local)` configuration per service that reads port and environment from the service's `launchSettings.json` (`launchSettingsFilePath` + `launchSettingsProfile`) instead of repeating them, and an `All services (Local)` compound with every service and `stopAll: true`.
 - `.env.example` is committed; `.env` is not.
 - Container name is `<project>_ms-<name>`, the internal port is `8080`, and every container joins the shared external network `<project>_network`.
 
@@ -57,6 +61,7 @@ ms-<name>/
 - `Development` runs from `docker-compose.dev.yml` and uses the development database.
 - `Production` runs from `docker-compose.yml` and uses the production database.
 - `appsettings.json` holds the base settings; `appsettings.Local.json` and `appsettings.Development.json` override them for their environment.
+- Launch profiles in `launchSettings.json` and `.vscode/launch.json` run in `Local` and never open a browser (`launchBrowser: false`).
 
 ## WebApi layout
 
@@ -148,10 +153,10 @@ WebApi/
 
 ## Code style
 
-- File-scoped namespaces; the namespace matches the folder path.
+- File-scoped namespaces, enforced in `.editorconfig` with `csharp_style_namespace_declarations = file_scoped`; the namespace matches the folder path.
 - Constructor injection into `private readonly` fields without an underscore prefix, assigned with `this.`.
 - Async methods take `CancellationToken ct` (`= default` on interfaces).
-- `.csproj` enables `Nullable`, `ImplicitUsings`, `TreatWarningsAsErrors`, `FileScopedNamespaces`.
+- `.csproj` enables `Nullable`, `ImplicitUsings`, `TreatWarningsAsErrors`.
 
 ## Program.cs
 
