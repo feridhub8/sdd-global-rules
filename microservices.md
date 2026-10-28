@@ -23,8 +23,9 @@ Decide these with me for each project and record the decision in the project's `
 ## Infrastructure
 
 - One folder per tool, containing only `docker-compose.yml`, `.env.example`, and config files the tool needs.
-- `start.bat` / `stop.bat` at the root start and stop all tools in dependency order.
-- When I ask to add a tool, add only its Docker setup and register it in the start/stop scripts.
+- A root `docker-compose.yml` includes every tool, so all tools start and stop with docker compose.
+- When I ask to add a tool, add only its Docker setup and include it in the root `docker-compose.yml`.
+- No OS-specific scripts. Everything runs with docker compose commands, which work the same on every OS.
 
 ## Service root
 
@@ -41,10 +42,6 @@ ms-<name>/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
-├── start.bat
-├── stop.bat
-├── start-dev.bat
-├── stop-dev.bat
 └── README.md
 ```
 
