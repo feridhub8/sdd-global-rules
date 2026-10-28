@@ -9,6 +9,7 @@ Decide these with me for each project and record the decision in the project's `
 - .NET version (target framework).
 - Repository layout: one repo per service or a monorepo.
 - Database: one per service, shared, or mixed; and the database engine.
+- Whether development and production databases share one server or run on separate servers.
 - API gateway / reverse proxy.
 - Communication between services: synchronous protocol and/or message broker.
 - Mapping library.
@@ -70,6 +71,7 @@ ms-<name>/
 - `Local` runs on the developer machine and uses the development database.
 - `Development` runs from `docker-compose.dev.yml` and uses the development database.
 - `Production` runs from `docker-compose.yml` and uses the production database.
+- When development and production share one server, development resources on it end with `Dev`: database names, and per-environment resources inside a shared tool instance, such as identity provider realms. Production names have no suffix. SQL scripts quote these names so the suffix keeps its case.
 - `appsettings.json` holds the base settings; `appsettings.Local.json` and `appsettings.Development.json` override them for their environment.
 - Launch profiles in `launchSettings.json` and `.vscode/launch.json` run in `Local` and never open a browser (`launchBrowser: false`).
 
