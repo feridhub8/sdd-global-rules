@@ -34,7 +34,7 @@ ms-<name>/
 ├── src/
 │   └── WebApi/
 ├── .vscode/                 # one repo per service only
-├── .dockerignore
+├── .dockerignore            # one repo per service only
 ├── .editorconfig            # one repo per service only
 ├── .env.example
 ├── .gitignore               # one repo per service only
@@ -52,7 +52,17 @@ ms-<name>/
   - `tasks.json`: one `build ms-<name>` task per service that builds its `WebApi.csproj`.
   - `launch.json`: one `ms-<name> (Local)` configuration per service that reads port and environment from the service's `launchSettings.json` (`launchSettingsFilePath` + `launchSettingsProfile`) instead of repeating them, and an `All services (Local)` compound with every service and `stopAll: true`.
 - `.env.example` is committed; `.env` is not.
-- Container name is `<project>_ms-<name>`, the internal port is `8080`, and every container joins the shared external network `<project>_network`.
+- The internal port is `8080`, and every container joins the shared external network `<project>_network`.
+
+## Docker
+
+- In a monorepo, images are built with the repository root as context (`docker build -f services/ms-<name>/Dockerfile .`), so shared projects outside the service folder can be copied in. Service compose files point `build.context` to the repository root.
+- `.dockerignore` lives in the service root when each service has its own repo, and only in the repository root in a monorepo. A service that needs different rules adds `services/ms-<name>/Dockerfile.dockerignore`, which replaces the root file entirely for that build.
+- In a monorepo, the repository root has `docker-compose.yml` (Production) and `docker-compose.dev.yml` (Development) that list every service compose file under `include:`.
+- Every compose file sets `name: <project>`, so the root and service files form one Compose project.
+- Compose files set no `container_name`. Compose names containers `<project>-ms-<name>-<n>`, so a service can run several replicas.
+- Before running Docker commands, the assistant checks that `<project>_network` exists and creates it when it is missing. The root `README.md` states that the network is required on every machine that runs the containers and gives `docker network create <project>_network`.
+- Host ports: the first digit is the environment (`Local` `5xxx`, `Development` `6xxx`, `Production` `7xxx`) and the last digits are the service number, the same in every environment. `Local` sets its port in `launchSettings.json`; `Development` and `Production` map their port to `8080` in the compose files.
 
 ## Environments
 
