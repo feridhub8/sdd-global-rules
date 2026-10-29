@@ -162,6 +162,7 @@ WebApi/
 - Deletes are soft deletes; `Restore` brings a record back.
 - Write actions and `WithDeleted` actions require the admin role.
 - Every action declares `[ProducesResponseType]` and takes `CancellationToken ct`.
+- Actions that return a body return `ActionResult<T>`; actions without a body return `IActionResult`.
 
 ## Code style
 
