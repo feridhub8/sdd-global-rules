@@ -63,7 +63,7 @@ ms-<name>/
 - Every compose file sets `name: <project>`, so the root and service files form one Compose project.
 - Compose files set no `container_name`. Compose names containers `<project>-ms-<name>-<n>`, so a service can run several replicas.
 - Before running Docker commands, the assistant checks that `<project>_network` exists and creates it when it is missing. The root `README.md` states that the network is required on every machine that runs the containers and gives `docker network create <project>_network`.
-- Host ports: the first digit is the environment (`Local` `5xxx`, `Development` `6xxx`, `Production` `7xxx`) and the last digits are the service number, the same in every environment. `api-gateway` has service number `0`. `Local` sets each service's port in `launchSettings.json`, so services are reachable directly there. In `Development` and `Production` only `api-gateway` publishes a host port, mapped to `8080` in its compose files; microservices publish none and are reached through the gateway.
+- Host ports: the first digit is the environment (`Local` `5xxx`, `Development` `6xxx`, `Production` `7xxx`) and the last digits are the service number, the same in every environment. `api-gateway` has service number `80`. `Local` sets each service's port in `launchSettings.json`, so services are reachable directly there. In `Development` and `Production` only `api-gateway` publishes a host port, mapped to `8080` in its compose files; microservices publish none and are reached through the gateway.
 
 ## Environments
 
