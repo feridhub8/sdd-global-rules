@@ -73,6 +73,7 @@ ms-<name>/
 - `Production` runs from `docker-compose.yml` and uses the production database.
 - When development and production share one server, development resources on it end with `Dev`: database names, and per-environment resources inside a shared tool instance, such as identity provider realms. Production names have no suffix. SQL scripts quote these names so the suffix keeps its case.
 - `appsettings.json` holds the base settings; `appsettings.Local.json` and `appsettings.Development.json` override them for their environment.
+- Connection strings are secrets. The whole connection string lives in the secrets store as `ConnectionStrings:Default`, one entry per environment; `appsettings*.json` never contains one, not even without a password. An environment that reaches a resource by a different host (`Local` on the host machine, `Development` in Docker) has its own secret path.
 - Launch profiles in `launchSettings.json` and `.vscode/launch.json` run in `Local` and never open a browser (`launchBrowser: false`).
 
 ## WebApi layout
@@ -139,9 +140,11 @@ WebApi/
 | Consumer | event name with `Consumer` instead of `Event` |
 | Message publisher | `IMessagePublisher` + `<Broker>Publisher` |
 | EF configuration | `<Entity>Configurations` |
+| DbContext | `ApplicationDbContext`, with `ApplicationDbContextFactory` for design time |
 | Exception | `<Reason>Exception` |
 | Extensions class | `<Area>Extensions` |
 | Middleware | `<Purpose>Middleware` |
+| Global exception handler | `GlobalExceptionHandler` |
 
 - Anything that also returns soft-deleted records gets a `WithDeleted` suffix on the query, handler, validator, and response DTO.
 - File name equals the type name.
@@ -153,7 +156,7 @@ WebApi/
 - Commands and queries are `sealed record`s implementing `IRequest` / `IRequest<T>` that wrap the request DTO.
 - Validators validate the command/query, not the DTO.
 - One mapping per file in `Mappings/V1`, written with the project's mapping library.
-- Errors are thrown as exceptions from `Exceptions/V1` and turned into HTTP responses by a global exception middleware.
+- Errors are thrown as exceptions from `Exceptions/V1` and turned into HTTP responses by `GlobalExceptionHandler` in `Middlewares/V1`.
 
 ## Controllers
 
@@ -173,9 +176,11 @@ WebApi/
 
 ## Program.cs
 
-- Stays short. If the project uses a secrets store, load secrets into configuration first.
+- Stays short. If the project uses a secrets store, load secrets into configuration first: with Vault, `VaultExtensions.InitVaultAsync`.
 - Register everything through `Init<Area>()` extension methods from `Extensions/V1`, one class per area.
 - `LibraryExtensions.InitLibraries` registers third-party libraries that need only library-level setup. Anything with its own configuration gets its own `<Area>Extensions` class.
+- `DatabaseExtensions.InitDatabase` registers the `ApplicationDbContext`.
+- `RepositoryExtensions.InitRepositories` registers every repository and `ServiceExtensions.InitServices` every service; `Program.cs` calls both. Repositories and services are not registered anywhere else, such as in a per-feature or per-area class.
 - Swagger only in `Local` and `Development`.
 - Health check at `/health`.
 
