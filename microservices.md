@@ -163,7 +163,7 @@ WebApi/
 - `[ApiController]`, `[ApiVersion]`, route `api/v{version:apiVersion}/[controller]`.
 - Actions: `POST Create`, `PUT Update/{id}`, `DELETE Delete/{id}`, `PATCH Restore/{id}`, `GET {id}`, `GET` for the list, plus `WithDeleted` variants of the two `GET`s.
 - Deletes are soft deletes; `Restore` brings a record back.
-- Write actions and `WithDeleted` actions require the admin role.
+- Write actions and `WithDeleted` actions require the admin role, unless the resource is owned by a user: then any signed-in user creates it, the owner updates and deletes it, and admins may still delete and restore any of them and read `WithDeleted`. A list of the caller's own resources is `GET Mine`.
 - Every action declares `[ProducesResponseType]` and takes `CancellationToken ct`.
 - Actions that return a body return `ActionResult<T>`; actions without a body return `IActionResult`.
 
